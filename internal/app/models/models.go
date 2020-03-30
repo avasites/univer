@@ -2,17 +2,19 @@ package models
 
 import (
 	"database/sql"
+	"fmt"
 
 	//pq ...
+	"github.com/BurntSushi/toml"
 	_ "github.com/lib/pq"
 )
 
-//DdUser ...
-const (
-	DdUser     = "postgres"
-	DbPassword = "example"
-	DbName     = "test_go"
-)
+//DbData ...
+type DbData struct {
+	NameDB   string
+	NameUSER string
+	Passw    string
+}
 
 //QueryParametr ...
 type QueryParametr struct {
@@ -49,12 +51,18 @@ func QueryGenerator(params QueryParametr) string {
 //GetConnection ...
 func GetConnection() *sql.DB {
 
-	dbinfo := "postgres://" + DdUser + ":" + DbPassword + "@psql/" + DbName + "?sslmode=disable"
+	var config DbData
+
+	if _, err := toml.DecodeFile("/go/src/github.com/avasites/univer/config.toml", &config); err != nil {
+		fmt.Println(err)
+	}
+
+	dbinfo := "postgres://" + config.NameUSER + ":" + config.Passw + "@psql/" + config.NameDB + "?sslmode=disable"
 
 	db, err := sql.Open("postgres", dbinfo)
 
 	if err != nil {
-		panic(err)
+		fmt.Println(err)
 	}
 
 	return db
